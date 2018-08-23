@@ -21,7 +21,7 @@ class Model():
     def get_vector(self, word, defaultToZero = True):
         if self.model == None:
             raise RunTimeError("No model have been loaded! Use load_model(<model_name>) ir __init__(<model_name>) to load a word2vec model")
-        if word not in model and defaultToZero:
+        if word not in self.model and defaultToZero:
             return np.zeros(self.model.vector_size)
         return self.model[word]
 
