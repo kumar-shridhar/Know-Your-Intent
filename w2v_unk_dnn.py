@@ -11,7 +11,7 @@ def nn(data, neurons_per_layer):
         layers.append(tf.layers.dense(inputs=layers[-1], units=neurons_per_layer[x], activation=tf.nn.relu))
     return layers[-1]
 
-epochs = 10
+epochs = 1000
 
 window = 3
 
@@ -29,6 +29,20 @@ with open("ask_ubuntu_data.csv") as csv_file:
         else:
             words_valid.append(s.split(" "))
 
+with open("yahoo_answers_csv/train.csv") as csv_file:
+    reader = csv.reader(csv_file, delimiter = ",")
+    i = 0
+    for row in reader:
+        i+=1
+        for sentence in row[1:]:
+            s = re.sub(r"\\[-()\"#/@;:<>{}`+=~|.!?,]", "", sentence)
+            if random.random() > 0.1:
+                words_training.append(s.split(" "))
+            else:
+                words_valid.append(s.split(" "))
+        if i > 1000:
+            break
+
 data_training = []
 data_valid = []
 
@@ -39,7 +53,7 @@ data_valid_y = []
 
 model = w2v.Model("Google")
 
-print(words_training)
+#print(words_training)
 
 for sentence in words_training:
     s = []
@@ -58,6 +72,8 @@ for sentence in words_valid:
             s.append(v)
     if len(s) > 1:
         data_valid.append(s)
+
+model = None
 
 for vectors in data_training:
     for i in range(len(vectors)):
@@ -94,7 +110,7 @@ value = nn(x, neurons_per_layer)
 
 cost = tf.reduce_mean(tf.squared_difference(value, y))
 
-optimizer = tf.train.GradientDescentOptimizer(0.0001).minimize(loss = cost)
+optimizer = tf.train.AdamOptimizer(0.0001).minimize(loss = cost)
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
@@ -110,7 +126,7 @@ with tf.Session() as sess:
         for i in range(len(data_valid_x)):
             inp = [data_valid_x[i]]
             out = [data_valid_y[i]]
-            val = sess.run([value], feed_dict = {x: inp, y: out})
-            if model.get_word(out[0]) == model.get_word(value[0]):
-                correctness += 1
-        print("Epoch correctness = {}".format(correctness/len(data_valid_x)))
+            val = sess.run([value], feed_dict = {x: inp})
+            dist = np.linalg.norm(out[0]-val[0])
+            correctness += dist
+        print("Epoch wrongness = {}".format(correctness))
