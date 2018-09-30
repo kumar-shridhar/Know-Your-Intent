@@ -11,6 +11,7 @@ import spacy
 import sklearn
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 from sklearn import model_selection
 from time import time
 from sklearn.feature_extraction.text import TfidfVectorizer, HashingVectorizer, CountVectorizer
@@ -109,7 +110,7 @@ intent_dict_WebApplications = {"Download Video":0, "Change Password":1, "None":2
 
 
 
-benchmark_dataset = 'WebApplication' #choose from 'AskUbuntu', 'Chatbot' or 'WebApplication'
+benchmark_dataset = 'Chatbot' #choose from 'AskUbuntu', 'Chatbot' or 'WebApplication'
 
 
 
@@ -319,7 +320,7 @@ print(xS_train[:3])
 # print(splits[0]["train"]["y"])
 
 for elem in splits[0]["train"]["y"]:
-    yS_train.append(intent_dict_WebApplications[elem])
+    yS_train.append(intent_dict_Chatbot[elem])
 # print(splits[0]["train"]["y"][1])
 # print(splits[0]["train"]["y"])
 # for elem in splits[0]["train"]["y"]:
@@ -521,16 +522,38 @@ def plot_ver_bars(results):
 #        print(results, "func", indices, "indices", clf_names, "clf_names" )
         training_time = np.array(training_time) / np.max(training_time)
         test_time = np.array(test_time) / np.max(test_time)
+        log_training_time = np.log10(training_time)
+        log_test_time = np.log10(test_time)
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(111)
 
-        plt.figure(figsize=(12, 8))
-        plt.title("Score")
-        plt.bar(indices, score, .2, label="classifiers", color='navy')
-        plt.bar(indices + .3, training_time, .2, label="training time",
-                 color='c')
-        plt.bar(indices + .6, test_time, .2, label="test time", color='darkorange')
-        plt.yscale('log')
+#        ax.set_yscale('log')
+#        labels = np.array([0, 0.005, 0.01, 0.017, 0.22, 0.035, 0.05, 0.07, 0.1, 0.15, 0.3, 0.5, 0.7, 1.0])
+##        labels = training_time
+#        ax.set_yticks(labels)
+#        ax.get_yaxis().set_major_formatter(ScalarFormatter())
+#        ax.set_ylim([0., 2.])
+##        fig1, ax1 = plt.subplots()
+#        ax1.get_xaxis().get_major_formatter().labelOnlyBase = False
+#        plt.yscale('log')
+        plt.grid(True)
+#        matplotlib.pyplot.autoscale(True, axis='both')
+        plt.title("With 10 augmented data/class")
+        plt.ylim(0.6, 1.0)
+#        plt.ylim(0.0,1.0)
+#        labels = np.arange(0,1.05,0.05)
+#        plt.xticks(labels, labels)
+#        plt.yticks(labels, labels)
+        plt.yticks()
+        plt.bar(indices, score, .4, label="accuracy", color='navy') #.4 was .2 in all
+#        plt.bar(indices + .3, training_time, .2, label="training time", color='c')
+#        plt.bar(indices + .6, test_time, .2, label="test time", color='darkorange')
+#        for log time with matplotlib ^
+#        plt.bar(indices + .3, log_training_time, .2, label="training time", color='c')
+#        plt.bar(indices + .6, log_test_time, .2, label="test time", color='darkorange')
         plt.xlabel("Classifiers used")
-        plt.ylabel("Score")
+        plt.ylabel("Accuracy")
+#        plt.ylabel("Log(Time)")
         #plt.yscale('log')
 
         plt.xticks(())
@@ -538,11 +561,13 @@ def plot_ver_bars(results):
         plt.subplots_adjust(left=.05)
         plt.subplots_adjust(top=.90)
         plt.subplots_adjust(bottom=.15)
+#        
+
 #        plt.set_yscale('log')
 
 
-        for i, c in zip(indices, clf_names):
-            plt.text(i, 1, c, rotation=-30, clip_on=True) #was -0.05 instead of 1
+        for i, c, s in zip(indices, clf_names, score):
+            plt.text(i, s+0.002, c, rotation=-30, clip_on=True) #was -0.05 instead of 1
             # print(i,c) #to set the text of the plots i needed to check them
             # plt.savefig("./plots/"+c+".png", format="png")
         
