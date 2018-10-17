@@ -11,3 +11,21 @@ The results were compared with other Chatbot provider services like Google Dialo
 
 
 ![Comparison Results Plot](./plots/results_Intent_Classification.png)
+
+If you use the work, please cite the authors:
+
+```
+@ARTICLE{2018arXiv181007150S,
+   author = {{Shridhar}, K. and {Sahu}, A. and {Dash}, A. and {Alonso}, P. and 
+	{Pihlgren}, G. and {Pondeknath}, V. and {Simistira}, F. and 
+	{Liwicki}, M.},
+    title = "{Subword Semantic Hashing for Intent Classification on Small Datasets}",
+  journal = {ArXiv e-prints},
+archivePrefix = "arXiv",
+   eprint = {1810.07150},
+ primaryClass = "cs.AI",
+ keywords = {Computer Science - Artificial Intelligence},
+     year = 2018,
+    month = oct
+}
+```
