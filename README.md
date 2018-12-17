@@ -15,17 +15,10 @@ The results were compared with other Chatbot provider services like Google Dialo
 If you use the work, please cite the authors:
 
 ```
-@ARTICLE{2018arXiv181007150S,
-   author = {{Shridhar}, K. and {Sahu}, A. and {Dash}, A. and {Alonso}, P. and 
-	{Pihlgren}, G. and {Pondeknath}, V. and {Simistira}, F. and 
-	{Liwicki}, M.},
-    title = "{Subword Semantic Hashing for Intent Classification on Small Datasets}",
-  journal = {ArXiv e-prints},
-archivePrefix = "arXiv",
-   eprint = {1810.07150},
- primaryClass = "cs.AI",
- keywords = {Computer Science - Artificial Intelligence},
-     year = 2018,
-    month = oct
+@article{shridhar2018subword,
+  title={Subword Semantic Hashing for Intent Classification on Small Datasets},
+  author={Shridhar, Kumar and Sahu, Amit and Dash, Ayushman and Alonso, Pedro and Pihlgren, Gustav and Pondeknath, Vinay and Simistira, Fotini and Liwicki, Marcus},
+  journal={arXiv preprint arXiv:1810.07150},
+  year={2018}
 }
 ```
