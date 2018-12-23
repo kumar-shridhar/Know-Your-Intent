@@ -1,18 +1,7 @@
 # Know your Intent : Intent Classification Using Semantic Hashing
 
-Intent Classification using Semantic Hashing as Featurizer. We successfully achieved State-of-the-Art results in three datasets: 
-1. Ask Ubuntu Coprus
-2. Web Application Corpus
-3. Chatbot Corpus
+Implementation of [Subword Semantic Hashing for Intent Classification on Small Datasets](https://arxiv.org/abs/1810.07150).
 
-Read about the method used in more details [here](https://medium.com/@shridhar743/know-your-intent-sota-results-in-intent-classification-8e1ca47f364c)
-
-The results were compared with other Chatbot provider services like Google DialogueFlow, Facebook Wit AI, IBM Watson, Recast AI, Botify and so on and this is how the results look :
-
-
-![Comparison Results Plot](./plots/results_Intent_Classification.png)
-
-If you use the work, please cite the authors:
 
 ```
 @article{shridhar2018subword,
@@ -22,3 +11,30 @@ If you use the work, please cite the authors:
   year={2018}
 }
 ```
+
+------------------------------------------------------------------------------------------------------------------------------
+### Dataset
+
+Intent Classification using Semantic Hashing as Featurizer was used. We successfully achieved State-of-the-Art results in three datasets: 
+1. [Ask Ubuntu Coprus](https://github.com/sebischair/NLU-Evaluation-Corpora)
+2. [Web Application Corpus](https://github.com/sebischair/NLU-Evaluation-Corpora)
+3. [Chatbot Corpus](https://github.com/sebischair/NLU-Evaluation-Corpora)
+
+Read about the details in this [blog](https://medium.com/@shridhar743/know-your-intent-sota-results-in-intent-classification-8e1ca47f364c)
+
+------------------------------------------------------------------------------------------------------------------------------
+
+### Results
+
+The results were compared with other NLU service providers like Google DialogueFlow, IBM Watson, Recast AI, Botify, RASA, Snips and so on and a comparison was drawn:
+
+
+![Comparison Results Table](./table/ComparisonTable.png)
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+### Contact
+
+For any queries, contact: shridhar.stark@gmail.com
+
+-----------------------------------------------------------------------------------------------------------------------------
