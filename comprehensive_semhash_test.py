@@ -98,8 +98,19 @@ print(sys.path)
 
 # !python -m spacy download en_core_web_lg
 nlp=spacy.load('en_core_web_lg')
+print('Running')
 
+# for hyper_bench in ['AskUbuntu', 'Chatbot', 'WebApplication']:
+#     benchmark_dataset = hyper
 
+#     for hyper_over in [True, False]:
+#         oversample = hyper_over
+
+#         for hyper_syn_extra in [True, False]:
+#             synonym_extra_samples = hyper_syn_extra
+
+#             for hyper_aug in [True, False]:
+#                 augm
 
 
 nouns = {x.name().split('.', 1)[0] for x in wordnet.all_synsets('n')}
@@ -123,7 +134,7 @@ print(get_synonyms("search",-1))
 
 
 #Hyperparameters
-benchmark_dataset = 'Chatbot' # Choose from 'AskUbuntu', 'Chatbot' or 'WebApplication'
+benchmark_dataset = 'AskUbuntu' # Choose from 'AskUbuntu', 'Chatbot' or 'WebApplication'
 oversample = True             # Whether to oversample small classes or not. True in the paper
 synonym_extra_samples = False  # Whether to replace words by synonyms in the oversampled samples. True in the paper
 augment_extra_samples = False # Whether to add random spelling mistakes in the oversampled samples. False in the paper
@@ -132,7 +143,7 @@ additional_augments = 0       # How many extra spelling mistake augmented senten
 mistake_distance = 1.4        # How far away on the keyboard a mistake can be
 
 
-for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples, additional_synonyms, additional_augments, mistake_distance in product(['AskUbuntu', 'Chatbot', 'WebApplication'], [True, False], [False, True], [False, True], [0,4], [0,4], [2.1]):
+for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples, additional_synonyms, additional_augments, mistake_distance in product(['AskUbuntu', 'Chatbot', 'WebApplication'], [True, False], [False], [False, True], [0], [0,1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [2.1]):
 
     if benchmark_dataset == "Chatbot":
         intent_dict = {"DepartureTime":0, "FindConnection":1}
