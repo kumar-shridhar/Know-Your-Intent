@@ -143,8 +143,8 @@ additional_augments = -1       # How many extra spelling mistake augmented sente
 mistake_distance = -1        # How far away on the keyboard a mistake can be
 
 
-RESULT_FILE = "result2.csv"
-METADATA_FILE = "metadata2.csv"
+RESULT_FILE = "result3.csv"
+METADATA_FILE = "metadata3.csv"
 NUMBER_OF_RUNS_PER_SETTING = 10
 
 for benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples), additional_synonyms, additional_augments, mistake_distance in product(['AskUbuntu', 'Chatbot', 'WebApplication'], [(False, False, False),(True, False, False),(True, False, True),(True, True, False),(True, True, True)], [0,4], [0,4], [2.1]):
@@ -633,7 +633,7 @@ for benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples
 
     with open("./"+METADATA_FILE, 'a', encoding='utf8') as csvFile:
             fileWriter = csv.writer(csvFile, delimiter='\t')
-            fileWriter.writerow([benchmark_dataset,str(preprocess_time),str(semhash_time),str(vectorize_time)])
+            fileWriter.writerow([benchmark_dataset,str(oversample),str(synonym_extra_samples),str(augment_extra_samples),str(additional_synonyms),str(additional_augments),str(mistake_distance),str(preprocess_time),str(semhash_time),str(vectorize_time)])
 
 
     print(X_train[0].tolist())
