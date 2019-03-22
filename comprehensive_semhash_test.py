@@ -123,16 +123,21 @@ print(get_synonyms("search",-1))
 
 
 #Hyperparameters
-benchmark_dataset = 'Chatbot' # Choose from 'AskUbuntu', 'Chatbot' or 'WebApplication'
-oversample = True             # Whether to oversample small classes or not. True in the paper
+benchmark_dataset = '' # Choose from 'AskUbuntu', 'Chatbot' or 'WebApplication'
+oversample = False             # Whether to oversample small classes or not. True in the paper
 synonym_extra_samples = False  # Whether to replace words by synonyms in the oversampled samples. True in the paper
 augment_extra_samples = False # Whether to add random spelling mistakes in the oversampled samples. False in the paper
-additional_synonyms = 0       # How many extra synonym augmented sentences to add for each sentence. 0 in the paper
-additional_augments = 0       # How many extra spelling mistake augmented sentences to add for each sentence. 0 in the paper
-mistake_distance = 1.4        # How far away on the keyboard a mistake can be
+additional_synonyms = -1      # How many extra synonym augmented sentences to add for each sentence. 0 in the paper
+additional_augments = -1       # How many extra spelling mistake augmented sentences to add for each sentence. 0 in the paper
+mistake_distance = -1        # How far away on the keyboard a mistake can be
 
 
-for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples, additional_synonyms, additional_augments, mistake_distance in product(['AskUbuntu', 'Chatbot', 'WebApplication'], [True, False], [False, True], [False, True], [0,4], [0,4], [2.1]):
+RESULT_FILE = "result2.csv"
+METADATA_FILE = "metadata2.csv"
+NUMBER_OF_RUNS_PER_SETTING = 10
+
+for benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples), additional_synonyms, additional_augments, mistake_distance in product(['AskUbuntu', 'Chatbot', 'WebApplication'], [(False, False, False),(True, False, False),(True, False, True),(True, True, False),(True, True, True)], [0,4], [0,4], [2.1]):
+#or benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples), additional_synonyms, additional_augments, mistake_distance in product(['AskUbuntu', 'Chatbot', 'WebApplication'], [(True, True, False)], [0], [0], [2.1]):
 
     if benchmark_dataset == "Chatbot":
         intent_dict = {"DepartureTime":0, "FindConnection":1}
@@ -427,7 +432,9 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
 
 
     print("./datasets/KL/" + benchmark_dataset + "/train.csv")
+    t0 = time()
     dataset = MeraDataset("./datasets/KL/" + benchmark_dataset + "/train.csv")
+    
     print("mera****************************")
     splits = dataset.get_splits()
     xS_train = []
@@ -438,7 +445,7 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
 
     for elem in splits[0]["train"]["y"]:
         yS_train.append(intent_dict[elem])
-
+    preprocess_time = time()-t0
     print(len(xS_train))
 
 
@@ -447,12 +454,10 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
     X_train_raw, y_train_raw = read_CSV_datafile(filename = filename_train)
     X_test_raw, y_test_raw = read_CSV_datafile(filename = filename_test)
     print(y_train_raw[:5])
-
+    print(X_test_raw[:5])
+    print(y_test_raw[:5])
     X_train_raw = xS_train
     y_train_raw = yS_train
-
-
-
 
     print("Training data samples: \n",X_train_raw, "\n\n")
 
@@ -489,27 +494,24 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
             new_corpus.append(" ".join(map(str,tokens)))
         return new_corpus
 
+    t0 = time()
     X_train_raw = semhash_corpus(X_train_raw)
     X_test_raw = semhash_corpus(X_test_raw)
-
-
+    semhash_time = time()-t0
 
 
     print(X_train_raw[:5])
     print(y_train_raw[:5])
-
+    print()
+    print(X_test_raw[:5])
+    print(y_test_raw[:5])
 
 
 
     def get_vectorizer(corpus, preprocessor=None, tokenizer=None):
-        vectorizer = CountVectorizer(ngram_range=(2,4),analyzer='char')
+        vectorizer = CountVectorizer(ngram_range=(2,4),analyzer='word')
         vectorizer.fit(corpus)
         return vectorizer, vectorizer.get_feature_names()
-
-
-
-
-
 
 
 
@@ -539,6 +541,8 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
         score = metrics.accuracy_score(y_test, pred)
         f1_score = metrics.f1_score(y_test, pred, average='weighted')
 
+        #bad_pred = X_test[pred != y_test]
+
         print("accuracy:   %0.3f" % score)
         #print("Accuracy: %0.3f (+/- %0.3f)" % (score.mean(), score.std() * 2))
 
@@ -562,10 +566,10 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
             print("confusion matrix:")
             print(metrics.confusion_matrix(y_test, pred))
 
-        with open("./results.csv", 'a', encoding='utf8') as csvFile:
+        with open("./"+RESULT_FILE, 'a', encoding='utf8') as csvFile:
             fileWriter = csv.writer(csvFile, delimiter='\t')
             fileWriter.writerow([benchmark_dataset,str(clf),str(oversample),str(synonym_extra_samples),str(augment_extra_samples),
-                                 str(additional_synonyms),str(additional_augments), str(mistake_distance), str(score), str(f1_score)])
+                                 str(additional_synonyms),str(additional_augments), str(mistake_distance), str(score), str(f1_score), str(train_time), str(test_time)])
 
         print()
         clf_descr = str(clf).split('(')[0]
@@ -612,14 +616,23 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
 
         return X_train, y_train_raw, X_test, y_test_raw, feature_names
 
+    t0 = time()
+    X_train, y_train, X_test, y_test, feature_names = data_for_training()
+    vectorize_time = time()-t0
+
+    with open("./"+METADATA_FILE, 'a', encoding='utf8') as csvFile:
+            fileWriter = csv.writer(csvFile, delimiter='\t')
+            fileWriter.writerow([benchmark_dataset,str(preprocess_time),str(semhash_time),str(vectorize_time)])
 
 
+    print(X_train[0].tolist())
+    print(y_train[0])
 
-    for _ in enumerate(range(10)):
+
+    for _ in enumerate(range(NUMBER_OF_RUNS_PER_SETTING)):
         i_s = 0
         split = 0
         print("Evaluating Split {}".format(i_s))
-        X_train, y_train, X_test, y_test, feature_names = data_for_training()
         target_names = None
         if benchmark_dataset == "Chatbot":
             target_names = ["Departure Time", "Find Connection"]
@@ -638,21 +651,12 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
         parameters_knn = {'n_neighbors':k_range}
         knn=KNeighborsClassifier(n_neighbors=5)
         for clf, name in [  
-                #(RidgeClassifier(tol=1e-2, solver="lsqr"), "Ridge Classifier"),
-                #(GridSearchCV(knn,parameters_knn, cv=5),"gridsearchknn"),
+                (RidgeClassifier(tol=1e-2, solver="lsqr"), "Ridge Classifier"),
+                (GridSearchCV(knn,parameters_knn, cv=5),"gridsearchknn"),
                 #(Perceptron(n_iter=50), "Perceptron"),
-                #(GridSearchCV(MLPClassifier(activation='tanh'),parameters_mlp, cv=5),"gridsearchmlp"),
-               # (MLPClassifier(hidden_layer_sizes=(100, 50), activation="logistic", max_iter=300), "MLP"),
-                #(MLPClassifier(hidden_layer_sizes=(300, 100, 50), activation="logistic", max_iter=500), "MLP"),
-               # (MLPClassifier(hidden_layer_sizes=(300, 100, 50), activation="tanh", max_iter=500), "MLP"),
-                #(PassiveAggressiveClassifier(n_iter=50), "Passive-Aggressive"),
-               # (KNeighborsClassifier(n_neighbors=1), "kNN"),
-               # (KNeighborsClassifier(n_neighbors=3), "kNN"),
-               # (KNeighborsClassifier(n_neighbors=5), "kNN"),
-                #(KNeighborsClassifier(n_neighbors=10), "kNN"),
-                (GridSearchCV(RandomForestClassifier(n_estimators=10000900),parameters_RF, cv=5),"gridsearchRF")
-                #(RandomForestClassifier(n_estimators=10), "Random forest"),
-                #(RandomForestClassifier(n_estimators=50), "Random forest")
+                (GridSearchCV(MLPClassifier(activation='tanh'),parameters_mlp, cv=5),"gridsearchmlp"),
+                (PassiveAggressiveClassifier(n_iter=50), "Passive-Aggressive"),
+                (GridSearchCV(RandomForestClassifier(n_estimators=10),parameters_RF, cv=5),"gridsearchRF")
         ]:
 
             print('=' * 80)
@@ -673,14 +677,14 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
            # plt.xlabel('Value of K for KNN')
            # plt.ylabel('Cross-Validated Accuracy')
 
-        #parameters_Linearsvc = [{'C': [1, 10], 'gamma': [0.1,1.0]}]
+        parameters_Linearsvc = [{'C': [1, 10], 'gamma': [0.1,1.0]}]
         for penalty in ["l2", "l1"]:
-            print('=' * 80)
-            print("%s penalty" % penalty.upper())
+        #    print('=' * 80)
+        #    print("%s penalty" % penalty.upper())
             # Train Liblinear model
-            #grid=(GridSearchCV(LinearSVC,parameters_Linearsvc, cv=10),"gridsearchSVC")
+            grid=(GridSearchCV(LinearSVC,parameters_Linearsvc, cv=10),"gridsearchSVC")
             #results.append(benchmark(LinearSVC(penalty=penalty), X_train, y_train, X_test, y_test, target_names,
-                                    # feature_names=feature_names))
+            #                         feature_names=feature_names))
 
             result = benchmark(LinearSVC(penalty=penalty, dual=False,tol=1e-3),
                                      X_train, y_train, X_test, y_test, target_names,
@@ -695,23 +699,23 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
             results.append(result)
 
         # Train SGD with Elastic Net penalty
-        print('=' * 80)
-        print("Elastic-Net penalty")
+        #print('=' * 80)
+        #print("Elastic-Net penalty")
         results.append(benchmark(SGDClassifier(alpha=.0001, n_iter=50,
                                                penalty="elasticnet"),
                                  X_train, y_train, X_test, y_test, target_names,
                                  feature_names=feature_names))
 
         # Train NearestCentroid without threshold
-        print('=' * 80)
-        print("NearestCentroid (aka Rocchio classifier)")
+        #print('=' * 80)
+        #print("NearestCentroid (aka Rocchio classifier)")
         results.append(benchmark(NearestCentroid(),
                                  X_train, y_train, X_test, y_test, target_names,
                                  feature_names=feature_names))
 
         # Train sparse Naive Bayes classifiers
-        print('=' * 80)
-        print("Naive Bayes")
+        #print('=' * 80)
+        #print("Naive Bayes")
         results.append(benchmark(MultinomialNB(alpha=.01),
                                  X_train, y_train, X_test, y_test, target_names,
                                  feature_names=feature_names))
@@ -721,13 +725,10 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
                                  feature_names=feature_names)
         results.append(result)
 
-        print('=' * 80)
-        print("LinearSVC with L1-based feature selection")
+        #print('=' * 80)
+        #print("LinearSVC with L1-based feature selection")
         # The smaller C, the stronger the regularization.
         # The more regularization, the more sparsity.
-
-    # uncommenting more parameters will give better exploring power but will
-    # increase processing time in a combinatorial way
         result = benchmark(Pipeline([
                                       ('feature_selection', SelectFromModel(LinearSVC(penalty="l1", dual=False,
                                                                                       tol=1e-3))),
@@ -735,10 +736,10 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
                                  X_train, y_train, X_test, y_test, target_names,
                                  feature_names=feature_names)
         results.append(result)
-       # print(grid.grid_scores_)
-       #KMeans clustering algorithm 
-        print('=' * 80)
-        print("KMeans")
+        #print(grid.grid_scores_)
+        #KMeans clustering algorithm 
+        #print('=' * 80)
+        #print("KMeans")
         results.append(benchmark(KMeans(n_clusters=2, init='k-means++', max_iter=300,
                     verbose=0, random_state=0, tol=1e-4),
                                  X_train, y_train, X_test, y_test, target_names,
@@ -746,10 +747,9 @@ for benchmark_dataset, oversample, synonym_extra_samples, augment_extra_samples,
 
 
 
-        print('=' * 80)
-        print("LogisticRegression")
-        #kfold = model_selection.KFold(n_splits=2, random_state=0)
-        #model = LinearDiscriminantAnalysis()
+        #print('=' * 80)
+        #print("LogisticRegression")
+        kfold = model_selection.KFold(n_splits=2, random_state=0)
         results.append(benchmark(LogisticRegression(C=1.0, class_weight=None, dual=False,
               fit_intercept=True, intercept_scaling=1, max_iter=100,
               multi_class='ovr', n_jobs=1, penalty='l2', random_state=None,
