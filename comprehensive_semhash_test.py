@@ -98,8 +98,19 @@ print(sys.path)
 
 # !python -m spacy download en_core_web_lg
 nlp=spacy.load('en_core_web_lg')
+print('Running')
 
+# for hyper_bench in ['AskUbuntu', 'Chatbot', 'WebApplication']:
+#     benchmark_dataset = hyper
 
+#     for hyper_over in [True, False]:
+#         oversample = hyper_over
+
+#         for hyper_syn_extra in [True, False]:
+#             synonym_extra_samples = hyper_syn_extra
+
+#             for hyper_aug in [True, False]:
+#                 augm
 
 
 nouns = {x.name().split('.', 1)[0] for x in wordnet.all_synsets('n')}
