@@ -141,17 +141,17 @@ augment_extra_samples = False # Whether to add random spelling mistakes in the o
 additional_synonyms = -1      # How many extra synonym augmented sentences to add for each sentence. 0 in the paper
 additional_augments = -1       # How many extra spelling mistake augmented sentences to add for each sentence. 0 in the paper
 mistake_distance = -1        # How far away on the keyboard a mistake can be
+VECTORIZER = ""                 #which vectorizer to use. choose between "count", "hash", and "tfidf"
 
-
-RESULT_FILE = "result3.csv"
-METADATA_FILE = "metadata3.csv"
+RESULT_FILE = "result5.csv"
+METADATA_FILE = "metadata5.csv"
 NUMBER_OF_RUNS_PER_SETTING = 10
 
 #Comprehensive settings testing
-#for benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples), additional_synonyms, additional_augments, mistake_distance in product(['AskUbuntu', 'Chatbot', 'WebApplication'], [(False, False, False),(True, False, False),(True, False, True),(True, True, False),(True, True, True)], [0,4], [0,4], [2.1]):
+#for benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples), additional_synonyms, additional_augments, mistake_distance, VECTORIZER in product(['AskUbuntu', 'Chatbot', 'WebApplication'], [(False, False, False),(True, False, False),(True, False, True),(True, True, False),(True, True, True)], [0,4], [0,4], [2.1], ["tfidf", "hash", "count"]):
 
 #Settings from the original paper
-for benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples), additional_synonyms, additional_augments, mistake_distance in product(['AskUbuntu', 'Chatbot', 'WebApplication'], [(True, True, False)], [0], [0], [2.1]):
+for benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples), additional_synonyms, additional_augments, mistake_distance, VECTORIZER in product(['AskUbuntu', 'Chatbot', 'WebApplication'], [(True, True, False)], [0], [0], [2.1], ["tfidf"]):
 
     if benchmark_dataset == "Chatbot":
         intent_dict = {"DepartureTime":0, "FindConnection":1}
@@ -523,9 +523,21 @@ for benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples
 
 
     def get_vectorizer(corpus, preprocessor=None, tokenizer=None):
-        vectorizer = CountVectorizer(analyzer='word')#,ngram_range=(1,1))
-        vectorizer.fit(corpus)
-        return vectorizer, vectorizer.get_feature_names()
+        if VECTORIZER == "count":
+            vectorizer = CountVectorizer(analyzer='word')#,ngram_range=(1,1))
+            vectorizer.fit(corpus)
+            feature_names = vectorizer.get_feature_names()
+        elif VECTORIZER == "hash":
+            vectorizer = HashingVectorizer(analyzer='word', n_features=2**10, non_negative=True)
+            vectorizer.fit(corpus)
+            feature_names = None
+        elif VECTORIZER == "tfidf":
+            vectorizer = TfidfVectorizer(analyzer='word')
+            vectorizer.fit(corpus)
+            feature_names = vectorizer.get_feature_names()
+        else:
+            raise Exception("{} is not a recognized Vectorizer".format(VECTORIZER))
+        return vectorizer, feature_names
 
 
 
