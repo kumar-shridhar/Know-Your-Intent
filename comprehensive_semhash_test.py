@@ -520,7 +520,7 @@ for benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples
 
 
     def get_vectorizer(corpus, preprocessor=None, tokenizer=None):
-        vectorizer = CountVectorizer(ngram_range=(2,4),analyzer='word')
+        vectorizer = CountVectorizer(analyzer='word')#,ngram_range=(1,1))
         vectorizer.fit(corpus)
         return vectorizer, vectorizer.get_feature_names()
 
@@ -638,6 +638,7 @@ for benchmark_dataset, (oversample, synonym_extra_samples, augment_extra_samples
 
     print(X_train[0].tolist())
     print(y_train[0])
+    print(feature_names)
 
 
     for _ in enumerate(range(NUMBER_OF_RUNS_PER_SETTING)):
